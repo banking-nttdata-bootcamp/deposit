@@ -1,6 +1,6 @@
 spring:
   application:
-    name: bootcamp-deposit
+    name: deposit
   config:
     import: "optional:configserver:http://localhost:7000"
   cloud:
