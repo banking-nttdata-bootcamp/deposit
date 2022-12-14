@@ -50,7 +50,7 @@ public class DepositController {
 
 	//Save deposit
 	@CircuitBreaker(name = "deposits", fallbackMethod = "fallBackGetDeposits")
-	@PostMapping(value = "/saveDeposits/{commission}/{count}")
+	@PostMapping(value = "/saveDeposits/{count}")
 	public Mono<Deposit> saveDeposits(@RequestBody DepositDto dataDeposit,
 									  @PathVariable("count") Long count){
 		Mono<Long> countMovementsMono = getCountDeposits(dataDeposit.getAccountNumber());
