@@ -1,6 +1,7 @@
 package com.nttdata.bootcamp.controller;
 
 import com.nttdata.bootcamp.entity.Deposit;
+import com.nttdata.bootcamp.util.Constant;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Date;
 import javax.validation.Valid;
+import com.nttdata.bootcamp.entity.dto.DepositDto;
 
 @RestController
 @RequestMapping(value = "/deposit")
@@ -49,24 +51,31 @@ public class DepositController {
 	//Save deposit
 	@CircuitBreaker(name = "deposits", fallbackMethod = "fallBackGetDeposits")
 	@PostMapping(value = "/saveDeposits/{commission}/{count}")
-	public Mono<Deposit> saveDeposits(@RequestBody Deposit dataDeposit,@PathVariable("commission") Double commission,
+	public Mono<Deposit> saveDeposits(@RequestBody DepositDto dataDeposit,
 									  @PathVariable("count") Long count){
 		Mono<Long> countMovementsMono = getCountDeposits(dataDeposit.getAccountNumber());
 		Long countMovementS =countMovementsMono.block();
+		Deposit deposit= new Deposit();
 
-		Mono.just(dataDeposit).doOnNext(t -> {
+		Mono.just(deposit).doOnNext(t -> {
 					if(countMovementS>count)
-						t.setCommission(commission);
+						t.setCommission(Constant.COMISSION);
 					else
 						t.setCommission(new Double("0.00"));
-					t.setTypeAccount("passive");
+					t.setDni(dataDeposit.getDni());
+					t.setDepositNumber(dataDeposit.getDepositNumber());
+					t.setAccountNumber(dataDeposit.getAccountNumber());
+					t.setAmount(dataDeposit.getAmount());
+					t.setTypeAccount(Constant.TYPE_ACCOUNT);
+					t.setStatus(Constant.STATUS_ACTIVE);
 					t.setCreationDate(new Date());
 					t.setModificationDate(new Date());
 
-				}).onErrorReturn(dataDeposit).onErrorResume(e -> Mono.just(dataDeposit))
+
+				}).onErrorReturn(deposit).onErrorResume(e -> Mono.just(deposit))
 				.onErrorMap(f -> new InterruptedException(f.getMessage())).subscribe(x -> LOGGER.info(x.toString()));
 
-		Mono<Deposit> depositMono = depositService.saveDeposit(dataDeposit);
+		Mono<Deposit> depositMono = depositService.saveDeposit(deposit);
 		return depositMono;
 	}
 
