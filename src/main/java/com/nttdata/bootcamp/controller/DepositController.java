@@ -16,6 +16,8 @@ import java.util.Date;
 import javax.validation.Valid;
 import com.nttdata.bootcamp.entity.dto.DepositDto;
 
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(value = "/deposit")
 public class DepositController {
@@ -50,18 +52,18 @@ public class DepositController {
 
 	//Save deposit
 	@CircuitBreaker(name = "deposits", fallbackMethod = "fallBackGetDeposits")
-	@PostMapping(value = "/saveDeposits/{count}")
-	public Mono<Deposit> saveDeposits(@RequestBody DepositDto dataDeposit,
-									  @PathVariable("count") Long count){
-		Mono<Long> countMovementsMono = getCountDeposits(dataDeposit.getAccountNumber());
-		Long countMovementS =countMovementsMono.block();
+	@PostMapping(value = "/saveDeposits")
+	public Mono<Deposit> saveDeposits(@RequestBody DepositDto dataDeposit){
+		//Mono<Long> countMovementsMono = getCountDeposits(dataDeposit.getAccountNumber());
+		//Long countMovementS =countMovementsMono.block();
 		Deposit deposit= new Deposit();
 
 		Mono.just(deposit).doOnNext(t -> {
-					if(countMovementS>count)
+					/*if(count>5)
 						t.setCommission(Constant.COMISSION);
 					else
-						t.setCommission(new Double("0.00"));
+						t.setCommission("0.00");*/
+					t.setCommission(0.00);
 					t.setDni(dataDeposit.getDni());
 					t.setDepositNumber(dataDeposit.getDepositNumber());
 					t.setAccountNumber(dataDeposit.getAccountNumber());
@@ -81,7 +83,7 @@ public class DepositController {
 
 	//Update deposit
 	@CircuitBreaker(name = "deposits", fallbackMethod = "fallBackGetDeposits")
-	@PutMapping("/updateDeposit/{numberTransaction}")
+	@PutMapping(value ="/updateDeposit/{numberTransaction}")
 	public Mono<Deposit> updateDeposit(@PathVariable("numberTransaction") String numberTransaction,
 									   @Valid @RequestBody Deposit dataDeposit) {
 		Mono.just(dataDeposit).doOnNext(t -> {
