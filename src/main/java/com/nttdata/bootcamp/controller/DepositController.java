@@ -54,16 +54,16 @@ public class DepositController {
 	@CircuitBreaker(name = "deposits", fallbackMethod = "fallBackGetDeposits")
 	@PostMapping(value = "/saveDeposits")
 	public Mono<Deposit> saveDeposits(@RequestBody DepositDto dataDeposit){
-		//Mono<Long> countMovementsMono = getCountDeposits(dataDeposit.getAccountNumber());
-		//Long countMovementS =countMovementsMono.block();
+		Mono<Long> countMovementsMono = getCountDeposits(dataDeposit.getAccountNumber());
+		Long countMovementS =countMovementsMono.block();
 		Deposit deposit= new Deposit();
 
 		Mono.just(deposit).doOnNext(t -> {
-					/*if(count>5)
+					if(countMovementS>Constant.COUNT_TRANSACTION)
 						t.setCommission(Constant.COMISSION);
 					else
-						t.setCommission("0.00");*/
-					t.setCommission(0.00);
+						t.setCommission(0.00);
+					//t.setCommission(0.00);
 					t.setDni(dataDeposit.getDni());
 					t.setDepositNumber(dataDeposit.getDepositNumber());
 					t.setAccountNumber(dataDeposit.getAccountNumber());
