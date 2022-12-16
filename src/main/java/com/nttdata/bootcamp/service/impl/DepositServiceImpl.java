@@ -1,7 +1,9 @@
-package com.nttdata.bootcamp.service;
+package com.nttdata.bootcamp.service.impl;
 
 import com.nttdata.bootcamp.entity.Deposit;
 import com.nttdata.bootcamp.repository.DepositRepository;
+import com.nttdata.bootcamp.service.DepositService;
+import com.nttdata.bootcamp.service.KafkaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -12,6 +14,9 @@ import reactor.core.publisher.Mono;
 public class DepositServiceImpl implements DepositService {
     @Autowired
     private DepositRepository depositRepository;
+
+    @Autowired
+    private KafkaService kafkaService;
 
     @Override
     public Flux<Deposit> findAll() {
@@ -40,7 +45,7 @@ public class DepositServiceImpl implements DepositService {
     public Mono<Deposit> saveDeposit(Deposit dataDeposit ) {
         Mono<Deposit> depositMono = findByNumber(dataDeposit.getDepositNumber())
                 .flatMap(__ -> Mono.<Deposit>error(new Error("This deposit number " + dataDeposit.getDepositNumber() + "exists")))
-                .switchIfEmpty(depositRepository.save(dataDeposit));
+                .switchIfEmpty(saveTopic(dataDeposit));
         return depositMono;
 
 
@@ -80,8 +85,10 @@ public class DepositServiceImpl implements DepositService {
         return transactions;
     }
 
-
-
-
+    public Mono<Deposit> saveTopic(Deposit dataDeposit){
+        Mono<Deposit> monoDeposit = depositRepository.save(dataDeposit);
+        this.kafkaService.publish(monoDeposit.block());
+        return monoDeposit;
+    }
 
 }
