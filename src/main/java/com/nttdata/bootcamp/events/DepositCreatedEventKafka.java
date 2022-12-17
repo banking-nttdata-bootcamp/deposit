@@ -6,6 +6,6 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CreatedEventKafka extends EventKafka<Deposit> {
+public class DepositCreatedEventKafka extends EventKafka<Deposit> {
 
 }
