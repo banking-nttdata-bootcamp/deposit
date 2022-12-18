@@ -73,7 +73,7 @@ public class DepositServiceImpl implements DepositService {
             return depositRepository.delete(deposit);
         }
         catch (Exception e){
-            return Mono.<Void>error(new Error("This deposits whith number" + Number+ " exists"));
+            return Mono.<Void>error(new Error("This deposit number" + Number+ " exists"));
         }
     }
 
